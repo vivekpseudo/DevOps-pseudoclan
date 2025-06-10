@@ -1,22 +1,16 @@
-# app1/Dockerfile
-FROM python:3.10-slim AS base
+FROM python:3.10-slim
 
-# Install FastAPI app dependencies
 WORKDIR /app
+
+# Install system dependencies (for ffmpeg)
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY ./app /app/app
 
-# Start FastAPI in background
-CMD uvicorn app.main:app --host 127.0.0.1 --port 8000 & \
-    nginx -g "daemon off;"
+COPY . .
 
-# Install nginx
-RUN apt-get update && \
-    apt-get install -y nginx && \
-    apt-get clean
+EXPOSE 7860
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/sites-available/default
+CMD ["python", "main.py"]
 
-EXPOSE 80
